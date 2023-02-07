@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+  db:
+    image: postgres
+    container_name: finez_db
+    networks:
+      - finez_network
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - 5432:5432
+
+  server:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile.prod
+    container_name: finez_server
+    command: python manage.py runserver 0.0.0.0:8000
+    depends_on:
+      - db
+    networks:
+      - finez_network
+    volumes:
+      - ../backend/:/usr/src/app/
+    ports:
+      - 8000:8000
+      
+  client:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile.prod
+    container_name: finez_client
+    networks:
+      - finez_network
+    ports:
+    - 4200:80
+
+networks:
+  finez_network:
+    driver: bridge
